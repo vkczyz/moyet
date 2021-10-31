@@ -53,15 +53,14 @@ func handleConnection(conn net.Conn) {
 	buf := make([]byte, 1024)
 	_, err := conn.Read(buf)
 	if err != nil {
-		status = "50"
-		meta = "Unreadable input"
+		status = "59"
+		meta = "Could not read input"
 	}
-
 	
 	requested, err := url.Parse(string(bytes.Split(buf, []byte("\r\n"))[0]))
 	if err != nil {
-		status = "50"
-		meta = "Invalid URL"
+		status = "59"
+		meta = "Could not parse URL"
 	} else {
 		path := requested.RequestURI()
 		log.Print(path)
@@ -73,7 +72,7 @@ func handleConnection(conn net.Conn) {
 
 		data, err := ioutil.ReadFile(filepath)
 		if err != nil {
-			status = "40"
+			status = "51"
 			meta = "Could not find the requested file"
 		} else {
 			body = data
