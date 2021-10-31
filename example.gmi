@@ -1,0 +1,3 @@
+Welcome to the Moyet server!
+
+If you are seeing this, that means your Gemini server is working.
