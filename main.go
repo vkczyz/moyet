@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"crypto/tls"
 	"log"
 	"net"
 )
@@ -12,8 +13,15 @@ const (
 )
 
 func main() {
+	cert, err := tls.LoadX509KeyPair("server.crt", "server.key")
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	config := &tls.Config{Certificates: []tls.Certificate{cert}}
+
 	address := IP + ":" + PORT
-	listener, err := net.Listen("tcp", address)
+	listener, err := tls.Listen("tcp", address, config)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -27,6 +35,7 @@ func main() {
 			continue
 		}
 
+		log.Print("Connection established")
 		go handleConnection(conn)
 	}
 }
