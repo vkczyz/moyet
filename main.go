@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"crypto/tls"
 	"io/ioutil"
 	"log"
@@ -44,24 +43,23 @@ func main() {
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
 
-	scanner := bufio.NewScanner(conn)
-	for scanner.Scan() {
-		//data := scanner.Text()
+	status := "20"
+	meta := "text/gemini; charset=utf-8"
 
-		status := "20"
-		meta := "text/gemini; charset=utf-8"
-
-		body, err := ioutil.ReadFile("example.gmi")
-		if err != nil {
-			status = "40"
-			meta = "Could not find the requested file"
-		}
-
-		response := []byte(status + " " + meta + "\r\n")
-		response = append(response, body...)
-		conn.Write(response)
+	buf := make([]byte, 1024)
+	_, err := conn.Read(buf)
+	if err != nil {
+		status = "50"
+		meta = "Unreadable input"
 	}
-	if scanner.Err() != nil {
-		log.Print("Could not scan input")
+
+	body, err := ioutil.ReadFile("example.gmi")
+	if err != nil {
+		status = "40"
+		meta = "Could not find the requested file"
 	}
+
+	response := []byte(status + " " + meta + "\r\n")
+	response = append(response, body...)
+	conn.Write(response)
 }
