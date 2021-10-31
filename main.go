@@ -66,7 +66,12 @@ func handleConnection(conn net.Conn) {
 		path := requested.RequestURI()
 		log.Print(path)
 
-		data, err := ioutil.ReadFile(ROOT + path)
+		filepath := ROOT + path
+		if filepath[len(filepath)-1:] == "/" {
+			filepath += "index.gmi"
+		}
+
+		data, err := ioutil.ReadFile(filepath)
 		if err != nil {
 			status = "40"
 			meta = "Could not find the requested file"
