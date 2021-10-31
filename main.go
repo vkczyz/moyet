@@ -1,15 +1,18 @@
 package main
 
 import (
+	"bytes"
 	"crypto/tls"
 	"io/ioutil"
 	"log"
 	"net"
+	"net/url"
 )
 
 const (
 	IP = "0.0.0.0"
 	PORT = "1965"
+	ROOT = "."
 )
 
 func main() {
@@ -45,6 +48,7 @@ func handleConnection(conn net.Conn) {
 
 	status := "20"
 	meta := "text/gemini; charset=utf-8"
+	body := []byte("")
 
 	buf := make([]byte, 1024)
 	_, err := conn.Read(buf)
@@ -53,10 +57,22 @@ func handleConnection(conn net.Conn) {
 		meta = "Unreadable input"
 	}
 
-	body, err := ioutil.ReadFile("example.gmi")
+	
+	requested, err := url.Parse(string(bytes.Split(buf, []byte("\r\n"))[0]))
 	if err != nil {
-		status = "40"
-		meta = "Could not find the requested file"
+		status = "50"
+		meta = "Invalid URL"
+	} else {
+		path := requested.RequestURI()
+		log.Print(path)
+
+		data, err := ioutil.ReadFile(ROOT + path)
+		if err != nil {
+			status = "40"
+			meta = "Could not find the requested file"
+		} else {
+			body = data
+		}
 	}
 
 	response := []byte(status + " " + meta + "\r\n")
