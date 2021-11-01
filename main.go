@@ -1,12 +1,10 @@
 package main
 
 import (
-	"bytes"
 	"crypto/tls"
 	"io/ioutil"
 	"log"
 	"net"
-	"net/url"
 )
 
 const (
@@ -57,12 +55,12 @@ func handleConnection(conn net.Conn) {
 		meta = "Could not read input"
 	}
 	
-	requested, err := url.Parse(string(bytes.Split(buf, []byte("\r\n"))[0]))
+	requested, err := NewRequest(buf)
 	if err != nil {
 		status = "59"
 		meta = "Could not parse URL"
 	} else {
-		path := requested.RequestURI()
+		path := requested.url.RequestURI()
 		log.Print(path)
 
 		filepath := ROOT + path
