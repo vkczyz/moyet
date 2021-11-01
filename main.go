@@ -44,21 +44,17 @@ func main() {
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
 
-	status := "20"
-	meta := "text/gemini; charset=utf-8"
-	body := []byte("")
+	response := NewResponse(20, "text/gemini;")
 
 	buf := make([]byte, 1024)
 	_, err := conn.Read(buf)
 	if err != nil {
-		status = "59"
-		meta = "Could not read input"
+		response = NewResponse(59, "Could not read input")
 	}
 	
 	requested, err := NewRequest(buf)
 	if err != nil {
-		status = "59"
-		meta = "Could not parse URL"
+		response = NewResponse(59, "Could not parse URL")
 	} else {
 		path := requested.url.RequestURI()
 		log.Print(path)
@@ -70,14 +66,11 @@ func handleConnection(conn net.Conn) {
 
 		data, err := ioutil.ReadFile(filepath)
 		if err != nil {
-			status = "51"
-			meta = "Could not find the requested file"
+			response = NewResponse(51, "Could not find the requested file")
 		} else {
-			body = data
+			response.AddBodyFromBytes(data)
 		}
 	}
 
-	response := []byte(status + " " + meta + "\r\n")
-	response = append(response, body...)
-	conn.Write(response)
+	conn.Write(response.Format())
 }
